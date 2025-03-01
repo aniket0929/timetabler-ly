@@ -36,7 +36,7 @@ const Timetable: React.FC = () => {
   };
   
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col bg-gradient-to-b from-[#FFF5F7] to-[#FFDEE2]">
       <Header />
       
       <main className="flex-1 pt-32 pb-20 px-6">
@@ -47,13 +47,13 @@ const Timetable: React.FC = () => {
                 variant="ghost" 
                 size="sm" 
                 onClick={() => navigate('/generator')} 
-                className="mb-2 -ml-2"
+                className="mb-2 -ml-2 text-[#FF6B8B] hover:text-[#FF6B8B] hover:bg-[#FFF5F7]"
               >
                 <ArrowLeft className="w-4 h-4 mr-1" />
                 Back to Constraints
               </Button>
-              <h1 className="text-3xl md:text-4xl font-bold">Your Timetable</h1>
-              <p className="text-muted-foreground mt-2">
+              <h1 className="text-3xl md:text-4xl font-bold text-[#FF6B8B]">Your Timetable</h1>
+              <p className="text-[#FF8FAA] mt-2">
                 Drag and drop to rearrange classes or edit them by clicking the pencil icon.
               </p>
             </div>
@@ -62,7 +62,7 @@ const Timetable: React.FC = () => {
               <Button 
                 variant="outline"
                 onClick={handleSaveTimetable}
-                className="flex items-center"
+                className="flex items-center border-[#FFBAC3] text-[#FF6B8B] hover:bg-[#FFF5F7] hover:text-[#FF6B8B]"
               >
                 <Save className="w-4 h-4 mr-2" />
                 Save Timetable
@@ -71,9 +71,7 @@ const Timetable: React.FC = () => {
             </div>
           </div>
           
-          <div className="bg-card rounded-xl p-6 shadow-glass">
-            <TimetableView />
-          </div>
+          <TimetableView />
         </div>
       </main>
       

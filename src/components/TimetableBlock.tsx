@@ -58,6 +58,28 @@ const TimetableBlock: React.FC<TimetableBlockProps> = ({ block, subject, updateB
     setEditedBlock(prev => ({ ...prev, [field]: value }));
   };
   
+  // Get a light color based on the subject name
+  const getSubjectColor = () => {
+    // Simple hash function for strings
+    const hash = subject.name.split('').reduce((a, b) => {
+      a = ((a << 5) - a) + b.charCodeAt(0);
+      return a & a;
+    }, 0);
+    
+    // List of pastel colors
+    const colors = [
+      { bg: 'bg-[#F2FCE2]', border: 'border-[#DCF0C3]', text: 'text-[#77A357]' }, // green
+      { bg: 'bg-[#E5DEFF]', border: 'border-[#CBC2FF]', text: 'text-[#7366BD]' }, // purple
+      { bg: 'bg-[#D3E4FD]', border: 'border-[#B0CEFF]', text: 'text-[#3B82F6]' }, // blue
+      { bg: 'bg-[#FDE1D3]', border: 'border-[#FEC6A1]', text: 'text-[#F97316]' }, // orange
+      { bg: 'bg-[#FEF7CD]', border: 'border-[#F3E9A6]', text: 'text-[#EAB308]' }, // yellow
+    ];
+    
+    return colors[Math.abs(hash) % colors.length];
+  };
+  
+  const { bg, border, text } = getSubjectColor();
+  
   return (
     <>
       <div
@@ -65,71 +87,75 @@ const TimetableBlock: React.FC<TimetableBlockProps> = ({ block, subject, updateB
         draggable
         onDragStart={handleDragStart}
         onDragEnd={handleDragEnd}
-        className="timetable-block"
+        className={`h-full w-full p-2 ${bg} ${border} border-2 rounded-md cursor-grab hover:shadow-md transition-all duration-200`}
       >
         <div className="flex justify-between items-start">
-          <div className="font-medium text-sm">{subject.name}</div>
+          <div className={`font-bold text-sm ${text}`}>{subject.name}</div>
           <button
             onClick={handleEdit}
-            className="text-primary/70 hover:text-primary"
+            className={`${text} hover:text-opacity-70`}
           >
             <Pencil className="w-3 h-3" />
           </button>
         </div>
         
-        <div className="mt-1 text-xs text-muted-foreground">
+        <div className="mt-1 text-xs text-gray-600">
           <div>{subject.faculty}</div>
           {block.room && <div>{block.room}</div>}
-          <div className="mt-1 text-primary/70">
+          <div className={`mt-1 ${text}`}>
             {block.startTime} - {block.endTime}
           </div>
         </div>
       </div>
       
       <Dialog open={isEditing} onOpenChange={setIsEditing}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="sm:max-w-md bg-white border-2 border-[#FFBAC3]">
           <DialogHeader>
-            <DialogTitle>Edit Class</DialogTitle>
+            <DialogTitle className="text-[#FF6B8B]">Edit Class</DialogTitle>
           </DialogHeader>
           
           <div className="space-y-4 py-4">
             <div className="space-y-2">
-              <Label htmlFor="edit-faculty">Faculty</Label>
+              <Label htmlFor="edit-faculty" className="text-[#FF6B8B]">Faculty</Label>
               <Input
                 id="edit-faculty"
                 value={editedBlock.faculty}
                 onChange={(e) => handleFieldChange('faculty', e.target.value)}
+                className="border-[#FFBAC3] focus-visible:ring-[#FF6B8B]"
               />
             </div>
             
             <div className="space-y-2">
-              <Label htmlFor="edit-room">Room</Label>
+              <Label htmlFor="edit-room" className="text-[#FF6B8B]">Room</Label>
               <Input
                 id="edit-room"
                 value={editedBlock.room || ''}
                 onChange={(e) => handleFieldChange('room', e.target.value)}
                 placeholder="e.g., Room 101"
+                className="border-[#FFBAC3] focus-visible:ring-[#FF6B8B]"
               />
             </div>
             
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="edit-start-time">Start Time</Label>
+                <Label htmlFor="edit-start-time" className="text-[#FF6B8B]">Start Time</Label>
                 <Input
                   id="edit-start-time"
                   type="time"
                   value={editedBlock.startTime}
                   onChange={(e) => handleFieldChange('startTime', e.target.value)}
+                  className="border-[#FFBAC3] focus-visible:ring-[#FF6B8B]"
                 />
               </div>
               
               <div className="space-y-2">
-                <Label htmlFor="edit-end-time">End Time</Label>
+                <Label htmlFor="edit-end-time" className="text-[#FF6B8B]">End Time</Label>
                 <Input
                   id="edit-end-time"
                   type="time"
                   value={editedBlock.endTime}
                   onChange={(e) => handleFieldChange('endTime', e.target.value)}
+                  className="border-[#FFBAC3] focus-visible:ring-[#FF6B8B]"
                 />
               </div>
             </div>
@@ -137,9 +163,9 @@ const TimetableBlock: React.FC<TimetableBlockProps> = ({ block, subject, updateB
           
           <div className="flex justify-end space-x-2">
             <DialogClose asChild>
-              <Button variant="outline">Cancel</Button>
+              <Button variant="outline" className="border-[#FFBAC3] text-[#FF6B8B] hover:bg-[#FFF5F7] hover:text-[#FF6B8B]">Cancel</Button>
             </DialogClose>
-            <Button onClick={handleSave}>Save Changes</Button>
+            <Button onClick={handleSave} className="bg-[#FF6B8B] hover:bg-[#FF8FAA] text-white">Save Changes</Button>
           </div>
         </DialogContent>
       </Dialog>

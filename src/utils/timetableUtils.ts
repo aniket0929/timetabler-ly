@@ -1,3 +1,4 @@
+
 import { nanoid } from 'nanoid';
 import { TimetableConstraints, TimetableOption, TimetableBlock } from '../types/timetable';
 import { supabase } from '@/integrations/supabase/client';
@@ -15,7 +16,7 @@ export const generateSampleTimetables = async (
   constraintId: string
 ): Promise<TimetableOption[]> => {
   try {
-    console.log("Calling OpenAI to generate timetable options");
+    console.log("Calling OpenAI to generate timetable options with constraints:", JSON.stringify(constraints, null, 2));
     
     // Call the Supabase Edge Function that uses OpenAI
     const { data, error } = await supabase.functions.invoke('generate-timetable', {

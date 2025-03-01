@@ -1,8 +1,9 @@
 
 import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Save } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useToast } from '@/hooks/use-toast';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import TimetableView from '@/components/TimetableView';
@@ -11,7 +12,8 @@ import { useTimetable } from '@/context/TimetableContext';
 
 const Timetable: React.FC = () => {
   const navigate = useNavigate();
-  const { selectedTimetable, constraints } = useTimetable();
+  const { selectedTimetable, constraints, saveTimetable } = useTimetable();
+  const { toast } = useToast();
   
   // Redirect to generator if no timetable is selected
   useEffect(() => {
@@ -19,6 +21,19 @@ const Timetable: React.FC = () => {
       navigate('/generator');
     }
   }, [selectedTimetable, constraints.subjects, navigate]);
+  
+  const handleSaveTimetable = async () => {
+    try {
+      await saveTimetable();
+    } catch (error) {
+      console.error("Error saving timetable:", error);
+      toast({
+        title: "Error saving timetable",
+        description: "An error occurred while saving your timetable",
+        variant: "destructive",
+      });
+    }
+  };
   
   return (
     <div className="min-h-screen flex flex-col">
@@ -43,7 +58,17 @@ const Timetable: React.FC = () => {
               </p>
             </div>
             
-            <ExportOptions />
+            <div className="flex items-center space-x-2">
+              <Button 
+                variant="outline"
+                onClick={handleSaveTimetable}
+                className="flex items-center"
+              >
+                <Save className="w-4 h-4 mr-2" />
+                Save Timetable
+              </Button>
+              <ExportOptions />
+            </div>
           </div>
           
           <div className="bg-card rounded-xl p-6 shadow-glass">

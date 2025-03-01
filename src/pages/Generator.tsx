@@ -1,10 +1,13 @@
 
 import React from 'react';
+import { useToast } from '@/hooks/use-toast';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import ConstraintForm from '@/components/ConstraintForm';
 
 const Generator: React.FC = () => {
+  const { toast } = useToast();
+
   return (
     <div className="min-h-screen flex flex-col">
       <Header />

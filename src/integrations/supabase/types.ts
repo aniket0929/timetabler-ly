@@ -9,7 +9,230 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      break_periods: {
+        Row: {
+          constraint_id: string
+          created_at: string | null
+          end_time: string
+          id: string
+          name: string
+          start_time: string
+        }
+        Insert: {
+          constraint_id: string
+          created_at?: string | null
+          end_time: string
+          id?: string
+          name: string
+          start_time: string
+        }
+        Update: {
+          constraint_id?: string
+          created_at?: string | null
+          end_time?: string
+          id?: string
+          name?: string
+          start_time?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "break_periods_constraint_id_fkey"
+            columns: ["constraint_id"]
+            isOneToOne: false
+            referencedRelation: "timetable_constraints"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      preferred_time_slots: {
+        Row: {
+          created_at: string | null
+          day: string
+          id: string
+          subject_id: string
+          time: string
+        }
+        Insert: {
+          created_at?: string | null
+          day: string
+          id?: string
+          subject_id: string
+          time: string
+        }
+        Update: {
+          created_at?: string | null
+          day?: string
+          id?: string
+          subject_id?: string
+          time?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "preferred_time_slots_subject_id_fkey"
+            columns: ["subject_id"]
+            isOneToOne: false
+            referencedRelation: "subjects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      subjects: {
+        Row: {
+          constraint_id: string
+          created_at: string | null
+          duration: number
+          faculty: string
+          id: string
+          lectures_per_week: number
+          max_lectures_per_day: number | null
+          name: string
+          room: string | null
+        }
+        Insert: {
+          constraint_id: string
+          created_at?: string | null
+          duration: number
+          faculty: string
+          id?: string
+          lectures_per_week: number
+          max_lectures_per_day?: number | null
+          name: string
+          room?: string | null
+        }
+        Update: {
+          constraint_id?: string
+          created_at?: string | null
+          duration?: number
+          faculty?: string
+          id?: string
+          lectures_per_week?: number
+          max_lectures_per_day?: number | null
+          name?: string
+          room?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "subjects_constraint_id_fkey"
+            columns: ["constraint_id"]
+            isOneToOne: false
+            referencedRelation: "timetable_constraints"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      timetable_blocks: {
+        Row: {
+          created_at: string | null
+          day: string
+          end_time: string
+          faculty: string
+          id: string
+          room: string | null
+          start_time: string
+          subject_id: string
+          timetable_id: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          day: string
+          end_time: string
+          faculty: string
+          id?: string
+          room?: string | null
+          start_time: string
+          subject_id: string
+          timetable_id: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          day?: string
+          end_time?: string
+          faculty?: string
+          id?: string
+          room?: string | null
+          start_time?: string
+          subject_id?: string
+          timetable_id?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "timetable_blocks_subject_id_fkey"
+            columns: ["subject_id"]
+            isOneToOne: false
+            referencedRelation: "subjects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "timetable_blocks_timetable_id_fkey"
+            columns: ["timetable_id"]
+            isOneToOne: false
+            referencedRelation: "timetable_options"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      timetable_constraints: {
+        Row: {
+          created_at: string | null
+          end_time: string
+          id: string
+          institution_type: string
+          operating_days: string
+          start_time: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          end_time: string
+          id?: string
+          institution_type: string
+          operating_days: string
+          start_time: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          end_time?: string
+          id?: string
+          institution_type?: string
+          operating_days?: string
+          start_time?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      timetable_options: {
+        Row: {
+          constraint_id: string
+          created_at: string | null
+          id: string
+          name: string
+        }
+        Insert: {
+          constraint_id: string
+          created_at?: string | null
+          id?: string
+          name: string
+        }
+        Update: {
+          constraint_id?: string
+          created_at?: string | null
+          id?: string
+          name?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "timetable_options_constraint_id_fkey"
+            columns: ["constraint_id"]
+            isOneToOne: false
+            referencedRelation: "timetable_constraints"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never

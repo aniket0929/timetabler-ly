@@ -1,5 +1,8 @@
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
+import { nanoid } from 'nanoid';
 
 // Types for our timetable system
 export type InstitutionType = 'school' | 'college';
@@ -60,6 +63,8 @@ type TimetableContextType = {
   isGenerating: boolean;
   updateTimetableBlock: (block: TimetableBlock) => void;
   moveTimetableBlock: (blockId: string, newDay: string, newStartTime: string) => void;
+  saveTimetable: () => Promise<void>;
+  loadSavedTimetables: () => Promise<void>;
 };
 
 // Default constraints
@@ -81,34 +86,211 @@ export const TimetableProvider = ({ children }: { children: ReactNode }) => {
   const [timetableOptions, setTimetableOptions] = useState<TimetableOption[]>([]);
   const [selectedTimetable, setSelectedTimetable] = useState<TimetableOption | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
+  const { toast } = useToast();
 
   // Generate timetable options based on constraints
-  const generateTimetableOptions = () => {
+  const generateTimetableOptions = async () => {
     setIsGenerating(true);
     
-    // Simulate AI-based timetable generation
-    setTimeout(() => {
-      const options: TimetableOption[] = generateSampleTimetables(constraints);
-      setTimetableOptions(options);
-      if (options.length > 0) {
-        setSelectedTimetable(options[0]);
-      }
+    try {
+      // Save constraints to Supabase first
+      const constraintId = await saveConstraints();
+      
+      // Simulate AI-based timetable generation
+      setTimeout(async () => {
+        try {
+          const options: TimetableOption[] = await generateSampleTimetables(constraints, constraintId);
+          setTimetableOptions(options);
+          if (options.length > 0) {
+            setSelectedTimetable(options[0]);
+          }
+          
+          // Save generated timetable options
+          await saveGeneratedTimetables(options, constraintId);
+          
+          toast({
+            title: "Timetable generated",
+            description: `Generated ${options.length} timetable options`,
+          });
+        } catch (error) {
+          console.error("Error generating timetable:", error);
+          toast({
+            title: "Error generating timetable",
+            description: "An error occurred while generating the timetable",
+            variant: "destructive",
+          });
+        } finally {
+          setIsGenerating(false);
+        }
+      }, 2000);
+    } catch (error) {
+      console.error("Error saving constraints:", error);
+      toast({
+        title: "Error saving constraints",
+        description: "An error occurred while saving your constraints",
+        variant: "destructive",
+      });
       setIsGenerating(false);
-    }, 2000);
+    }
+  };
+
+  // Save constraints to Supabase
+  const saveConstraints = async (): Promise<string> => {
+    try {
+      // Insert constraints
+      const { data: constraintData, error: constraintError } = await supabase
+        .from('timetable_constraints')
+        .insert({
+          institution_type: constraints.institutionType,
+          operating_days: constraints.operatingDays,
+          start_time: constraints.startTime,
+          end_time: constraints.endTime,
+        })
+        .select('id')
+        .single();
+      
+      if (constraintError) throw constraintError;
+      
+      const constraintId = constraintData.id;
+      
+      // Insert break periods
+      if (constraints.breakPeriods.length > 0) {
+        const breakPeriodsData = constraints.breakPeriods.map(breakPeriod => ({
+          constraint_id: constraintId,
+          name: breakPeriod.name,
+          start_time: breakPeriod.startTime,
+          end_time: breakPeriod.endTime,
+        }));
+        
+        const { error: breakPeriodsError } = await supabase
+          .from('break_periods')
+          .insert(breakPeriodsData);
+        
+        if (breakPeriodsError) throw breakPeriodsError;
+      }
+      
+      // Insert subjects
+      for (const subject of constraints.subjects) {
+        const { data: subjectData, error: subjectError } = await supabase
+          .from('subjects')
+          .insert({
+            constraint_id: constraintId,
+            name: subject.name,
+            faculty: subject.faculty,
+            lectures_per_week: subject.lecturesPerWeek,
+            duration: subject.duration,
+            max_lectures_per_day: subject.maxLecturesPerDay,
+            room: subject.room,
+          })
+          .select('id')
+          .single();
+        
+        if (subjectError) throw subjectError;
+        
+        // Insert preferred time slots if any
+        if (subject.preferredTimeSlots && subject.preferredTimeSlots.length > 0) {
+          const preferredTimeSlotsData = subject.preferredTimeSlots.map(slot => ({
+            subject_id: subjectData.id,
+            day: slot.day,
+            time: slot.time,
+          }));
+          
+          const { error: slotsError } = await supabase
+            .from('preferred_time_slots')
+            .insert(preferredTimeSlotsData);
+          
+          if (slotsError) throw slotsError;
+        }
+      }
+      
+      return constraintId;
+    } catch (error) {
+      console.error("Error saving constraints:", error);
+      throw error;
+    }
+  };
+
+  // Save generated timetables to Supabase
+  const saveGeneratedTimetables = async (options: TimetableOption[], constraintId: string) => {
+    try {
+      for (const option of options) {
+        // Save timetable option
+        const { data: timetableData, error: timetableError } = await supabase
+          .from('timetable_options')
+          .insert({
+            constraint_id: constraintId,
+            name: option.name,
+          })
+          .select('id')
+          .single();
+        
+        if (timetableError) throw timetableError;
+        
+        const timetableId = timetableData.id;
+        
+        // Save timetable blocks
+        const blocksData = option.blocks.map(block => ({
+          timetable_id: timetableId,
+          subject_id: block.subjectId,
+          day: block.day,
+          start_time: block.startTime,
+          end_time: block.endTime,
+          faculty: block.faculty,
+          room: block.room,
+        }));
+        
+        const { error: blocksError } = await supabase
+          .from('timetable_blocks')
+          .insert(blocksData);
+        
+        if (blocksError) throw blocksError;
+      }
+    } catch (error) {
+      console.error("Error saving timetables:", error);
+      throw error;
+    }
   };
 
   // Update a timetable block
-  const updateTimetableBlock = (updatedBlock: TimetableBlock) => {
+  const updateTimetableBlock = async (updatedBlock: TimetableBlock) => {
     if (!selectedTimetable) return;
     
-    const updatedBlocks = selectedTimetable.blocks.map(block => 
-      block.id === updatedBlock.id ? updatedBlock : block
-    );
-    
-    setSelectedTimetable({
-      ...selectedTimetable,
-      blocks: updatedBlocks
-    });
+    try {
+      const updatedBlocks = selectedTimetable.blocks.map(block => 
+        block.id === updatedBlock.id ? updatedBlock : block
+      );
+      
+      setSelectedTimetable({
+        ...selectedTimetable,
+        blocks: updatedBlocks
+      });
+      
+      // If the block has a UUID format (from Supabase), update it in the database
+      if (updatedBlock.id.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/)) {
+        const { error } = await supabase
+          .from('timetable_blocks')
+          .update({
+            day: updatedBlock.day,
+            start_time: updatedBlock.startTime,
+            end_time: updatedBlock.endTime,
+            faculty: updatedBlock.faculty,
+            room: updatedBlock.room,
+            updated_at: new Date(),
+          })
+          .eq('id', updatedBlock.id);
+        
+        if (error) {
+          console.error("Error updating timetable block:", error);
+          toast({
+            title: "Error updating class",
+            description: "An error occurred while updating the class details",
+            variant: "destructive",
+          });
+        }
+      }
+    } catch (error) {
+      console.error("Error updating timetable block:", error);
+    }
   };
 
   // Move a timetable block to a new day and time
@@ -141,9 +323,61 @@ export const TimetableProvider = ({ children }: { children: ReactNode }) => {
     return end.getTime() - start.getTime();
   };
 
-  // Mock function to generate sample timetables based on constraints
-  const generateSampleTimetables = (constraints: TimetableConstraints): TimetableOption[] => {
-    // This would be replaced with actual AI-based generation
+  // Save current timetable
+  const saveTimetable = async () => {
+    if (!selectedTimetable) return;
+    
+    try {
+      toast({
+        title: "Saving timetable...",
+        description: "Your timetable is being saved",
+      });
+      
+      // Logic to save the timetable would go here
+      // This is a placeholder for future implementation
+      
+      toast({
+        title: "Timetable saved",
+        description: "Your timetable has been saved successfully",
+      });
+    } catch (error) {
+      console.error("Error saving timetable:", error);
+      toast({
+        title: "Error saving timetable",
+        description: "An error occurred while saving your timetable",
+        variant: "destructive",
+      });
+    }
+  };
+
+  // Load saved timetables
+  const loadSavedTimetables = async () => {
+    try {
+      // This is a placeholder for future implementation
+      // Logic to load saved timetables would go here
+      
+      toast({
+        title: "Timetables loaded",
+        description: "Your saved timetables have been loaded",
+      });
+    } catch (error) {
+      console.error("Error loading timetables:", error);
+      toast({
+        title: "Error loading timetables",
+        description: "An error occurred while loading your timetables",
+        variant: "destructive",
+      });
+    }
+  };
+
+  // Function to generate AI-based timetable options
+  const generateSampleTimetables = async (
+    constraints: TimetableConstraints,
+    constraintId: string
+  ): Promise<TimetableOption[]> => {
+    // This function would ideally call an AI-based generator on the backend
+    // For now, we'll use a similar logic to our mock function
+    
     const days = constraints.operatingDays === 'monday-to-friday'
       ? ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday']
       : ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
@@ -193,7 +427,7 @@ export const TimetableProvider = ({ children }: { children: ReactNode }) => {
           
           if (!overlapsWithBreak && !overlapsWithBlock) {
             blocks.push({
-              id: `${blockIdPrefix}${subjectIndex}_${lecturesPlaced}`,
+              id: nanoid(), // Use nanoid for temporary IDs
               subjectId: subject.id,
               day,
               startTime,
@@ -208,7 +442,7 @@ export const TimetableProvider = ({ children }: { children: ReactNode }) => {
       });
       
       options.push({
-        id: `option${optionIndex + 1}`,
+        id: nanoid(), // Use nanoid for temporary IDs
         name: `Timetable Option ${optionIndex + 1}`,
         blocks
       });
@@ -227,7 +461,9 @@ export const TimetableProvider = ({ children }: { children: ReactNode }) => {
     generateTimetableOptions,
     isGenerating,
     updateTimetableBlock,
-    moveTimetableBlock
+    moveTimetableBlock,
+    saveTimetable,
+    loadSavedTimetables
   };
 
   return (

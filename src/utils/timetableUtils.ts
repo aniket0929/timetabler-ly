@@ -1,6 +1,6 @@
-
 import { nanoid } from 'nanoid';
 import { TimetableConstraints, TimetableOption, TimetableBlock } from '../types/timetable';
+import { supabase } from '@/integrations/supabase/client';
 
 // Helper function to calculate duration between two times in milliseconds
 export const getDurationInMs = (startTime: string, endTime: string) => {
@@ -14,9 +14,32 @@ export const generateSampleTimetables = async (
   constraints: TimetableConstraints,
   constraintId: string
 ): Promise<TimetableOption[]> => {
-  // This function would ideally call an AI-based generator on the backend
-  // For now, we'll use a similar logic to our mock function
-  
+  try {
+    console.log("Calling OpenAI to generate timetable options");
+    
+    // Call the Supabase Edge Function that uses OpenAI
+    const { data, error } = await supabase.functions.invoke('generate-timetable', {
+      body: { constraints, constraintId },
+    });
+    
+    if (error) {
+      console.error("Error calling timetable generation function:", error);
+      throw new Error(`Failed to generate timetable: ${error.message}`);
+    }
+    
+    console.log("AI generated timetable options:", data.options);
+    return data.options;
+  } catch (error) {
+    console.error("Error in AI timetable generation:", error);
+    
+    // Fall back to the sample generation if AI fails
+    console.log("Falling back to sample timetable generation");
+    return generateFallbackTimetables(constraints);
+  }
+};
+
+// Fallback function to generate sample timetables (the original mock function)
+const generateFallbackTimetables = (constraints: TimetableConstraints): TimetableOption[] => {
   const days = constraints.operatingDays === 'monday-to-friday'
     ? ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday']
     : ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];

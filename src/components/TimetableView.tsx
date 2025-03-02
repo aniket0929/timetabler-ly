@@ -1,7 +1,10 @@
+
 import React, { useState } from 'react';
 import { useTimetable, TimetableBlock as TimetableBlockType } from '@/context/TimetableContext';
-import TimetableBlock from './TimetableBlock';
 import { Card } from '@/components/ui/card';
+import TimetableOptionsSelector from './timetable/TimetableOptionsSelector';
+import TimetableHeader from './timetable/TimetableHeader';
+import TimetableBody from './timetable/TimetableBody';
 
 const TimetableView: React.FC = () => {
   const { 
@@ -112,23 +115,11 @@ const TimetableView: React.FC = () => {
   
   return (
     <div className="space-y-6 animate-scale-in">
-      {timetableOptions.length > 1 && (
-        <div className="flex justify-center space-x-2 mb-6">
-          {timetableOptions.map((option) => (
-            <button
-              key={option.id}
-              onClick={() => setSelectedTimetable(option)}
-              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                selectedTimetable.id === option.id
-                  ? 'bg-[#FFDEE2] text-[#FF6B8B]'
-                  : 'bg-white text-[#FF6B8B] border border-[#FFDEE2] hover:bg-[#FFF5F7]'
-              }`}
-            >
-              {option.name}
-            </button>
-          ))}
-        </div>
-      )}
+      <TimetableOptionsSelector
+        timetableOptions={timetableOptions}
+        selectedTimetable={selectedTimetable}
+        setSelectedTimetable={setSelectedTimetable}
+      />
       
       <Card className="overflow-hidden border-[#FFBAC3] bg-white p-0 relative">
         <div className="absolute top-0 left-0 w-20 h-20 bg-[url('/lovable-uploads/84a222e7-3f1c-44e3-a17b-451371481dca.png')] bg-no-repeat bg-contain opacity-40"></div>
@@ -143,71 +134,20 @@ const TimetableView: React.FC = () => {
         <div className="overflow-x-auto p-4">
           <div className="min-w-[800px]">
             <table className="w-full border-collapse">
-              <thead>
-                <tr>
-                  <th className="p-2 bg-[#FFDEE2] text-[#FF6B8B] font-bold border-2 border-[#FFBAC3] rounded-tl-lg w-[100px]">Time</th>
-                  {days.map((day, index) => (
-                    <th 
-                      key={day}
-                      className={`p-2 font-bold border-2 bg-[#FFDEE2] text-[#FF6B8B] border-[#FFBAC3] ${index === days.length - 1 ? 'rounded-tr-lg' : ''}`}
-                    >
-                      {day}
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {timeSlots.map((time, timeIndex) => {
-                  const breakPeriod = getBreakForTimeSlot(time);
-                  
-                  return (
-                    <tr key={time}>
-                      <td className={`p-2 text-center text-sm font-medium bg-[#FFDEE2] text-[#FF6B8B] border-2 border-[#FFBAC3] ${timeIndex === timeSlots.length - 1 ? 'rounded-bl-lg' : ''}`}>
-                        {time}
-                      </td>
-                      
-                      {days.map((day, dayIndex) => {
-                        const block = timetableMatrix[timeIndex][dayIndex];
-                        const cellId = `${timeIndex}-${dayIndex}`;
-                        const isLastRow = timeIndex === timeSlots.length - 1;
-                        const isLastCol = dayIndex === days.length - 1;
-                        
-                        return (
-                          <td
-                            key={`${day}-${time}`}
-                            className={`border-2 relative h-24 ${dayColors[day]} ${isLastRow && isLastCol ? 'rounded-br-lg' : ''} ${dropTargetId === cellId ? 'ring-2 ring-[#FF6B8B]' : ''}`}
-                            onDrop={(e) => handleBlockDrop(e, timeIndex, dayIndex)}
-                            onDragOver={(e) => handleDragOver(e, cellId)}
-                            onDragLeave={handleDragLeave}
-                          >
-                            {block && (
-                              <TimetableBlock 
-                                block={block} 
-                                subject={getSubjectForBlock(block)}
-                                updateBlock={updateTimetableBlock}
-                              />
-                            )}
-                            
-                            {breakPeriod && !block && (
-                              <div className="h-full w-full flex items-center justify-center p-2 bg-[#FFF0F3] text-[#FF6B8B] text-sm font-medium border border-[#FFCDD6] rounded-md">
-                                {breakPeriod.name}
-                              </div>
-                            )}
-                            
-                            {!block && !breakPeriod && (
-                              <div className="h-full w-full p-2">
-                                <div className="h-full w-full rounded-md border-2 border-dashed border-[#FFBAC3]/30 flex items-center justify-center">
-                                  <span className="text-xs text-[#FF6B8B]/30">Empty Slot</span>
-                                </div>
-                              </div>
-                            )}
-                          </td>
-                        );
-                      })}
-                    </tr>
-                  );
-                })}
-              </tbody>
+              <TimetableHeader days={days} />
+              <TimetableBody
+                timeSlots={timeSlots}
+                days={days}
+                timetableMatrix={timetableMatrix}
+                dropTargetId={dropTargetId}
+                dayColors={dayColors}
+                getBreakForTimeSlot={getBreakForTimeSlot}
+                getSubjectForBlock={getSubjectForBlock}
+                handleDragOver={handleDragOver}
+                handleDragLeave={handleDragLeave}
+                handleBlockDrop={handleBlockDrop}
+                updateTimetableBlock={updateTimetableBlock}
+              />
             </table>
           </div>
         </div>

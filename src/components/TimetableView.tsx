@@ -38,16 +38,28 @@ const TimetableView: React.FC = () => {
     timeSlots.push(`${hour.toString().padStart(2, '0')}:00`);
   }
   
-  // Get blocks for a specific day and time
-  const getBlockForTimeSlot = (day: string, time: string) => {
-    return selectedTimetable.blocks.find(block => {
-      const blockStartHour = parseInt(block.startTime.split(':')[0]);
-      const blockStartMinute = parseInt(block.startTime.split(':')[1]);
-      const slotHour = parseInt(time.split(':')[0]);
-      
-      return block.day === day && blockStartHour === slotHour;
-    });
-  };
+  // Create a matrix to represent the timetable
+  const timetableMatrix: (TimetableBlockType | null)[][] = [];
+  
+  // Initialize the matrix with null values
+  for (let i = 0; i < timeSlots.length; i++) {
+    timetableMatrix[i] = [];
+    for (let j = 0; j < days.length; j++) {
+      timetableMatrix[i][j] = null;
+    }
+  }
+  
+  // Fill the matrix with blocks
+  selectedTimetable.blocks.forEach(block => {
+    const day = days.indexOf(block.day);
+    const startTime = block.startTime.split(':');
+    const hour = parseInt(startTime[0]);
+    const rowIndex = hour - startHour;
+    
+    if (day >= 0 && rowIndex >= 0 && rowIndex < timeSlots.length) {
+      timetableMatrix[rowIndex][day] = block;
+    }
+  });
   
   // Get break periods for a specific time
   const getBreakForTimeSlot = (time: string) => {
@@ -59,13 +71,15 @@ const TimetableView: React.FC = () => {
     });
   };
   
-  const handleBlockDrop = (e: React.DragEvent<HTMLDivElement>, day: string, time: string) => {
+  const handleBlockDrop = (e: React.DragEvent<HTMLDivElement>, timeIndex: number, dayIndex: number) => {
     e.preventDefault();
     setDropTargetId(null);
     
     try {
       const blockData = JSON.parse(e.dataTransfer.getData('application/json')) as TimetableBlockType;
       if (blockData && blockData.id) {
+        const day = days[dayIndex];
+        const time = timeSlots[timeIndex];
         moveTimetableBlock(blockData.id, day, time);
       }
     } catch (error) {
@@ -89,17 +103,9 @@ const TimetableView: React.FC = () => {
     }
     return {
       name: subject.name,
-      faculty: block.faculty, // Use faculty from block as it might have been edited
-      room: block.room // Use room from block as it might have been edited
+      faculty: block.faculty, 
+      room: block.room
     };
-  };
-  
-  // Switch between timetable options
-  const handleTimetableChange = (timetableId: string) => {
-    const selected = timetableOptions.find(option => option.id === timetableId);
-    if (selected) {
-      setSelectedTimetable(selected);
-    }
   };
   
   // Define pastel colors for days
@@ -108,8 +114,8 @@ const TimetableView: React.FC = () => {
     'Tuesday': 'bg-[#FEF7CD] border-[#F3E9A6]',
     'Wednesday': 'bg-[#F2FCE2] border-[#DCF0C3]',
     'Thursday': 'bg-[#D3E4FD] border-[#B0CEFF]',
-    'Friday': 'bg-[#FFDEE2] border-[#FFBAC3]',
-    'Saturday': 'bg-[#E5DEFF] border-[#CBC2FF]'
+    'Friday': 'bg-[#E5DEFF] border-[#CBC2FF]',
+    'Saturday': 'bg-[#FDE1D3] border-[#FEC6A1]'
   };
   
   return (
@@ -119,7 +125,7 @@ const TimetableView: React.FC = () => {
           {timetableOptions.map((option) => (
             <button
               key={option.id}
-              onClick={() => handleTimetableChange(option.id)}
+              onClick={() => setSelectedTimetable(option)}
               className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
                 selectedTimetable.id === option.id
                   ? 'bg-[#FFDEE2] text-[#FF6B8B]'
@@ -145,59 +151,73 @@ const TimetableView: React.FC = () => {
         
         <div className="overflow-x-auto p-4">
           <div className="min-w-[800px]">
-            <div className="grid grid-cols-[100px_repeat(auto-fill,1fr)]">
-              {/* Header row with days */}
-              <div className="p-2 bg-[#FFDEE2] text-[#FF6B8B] font-bold border border-[#FFBAC3] rounded-tl-lg flex items-center justify-center">Time</div>
-              {days.map((day, index) => (
-                <div 
-                  key={day} 
-                  className={`p-2 text-center font-bold border-2 ${dayColors[day]} ${index === days.length - 1 ? 'rounded-tr-lg' : ''}`}
-                >
-                  {day}
-                </div>
-              ))}
-              
-              {/* Time slots rows */}
-              {timeSlots.map((time, timeIndex) => (
-                <React.Fragment key={time}>
-                  <div className={`p-2 text-center text-sm font-medium bg-[#FFDEE2] text-[#FF6B8B] border-2 border-[#FFBAC3] ${timeIndex === timeSlots.length - 1 ? 'rounded-bl-lg' : ''}`}>
-                    {time}
-                  </div>
+            <table className="w-full border-collapse">
+              <thead>
+                <tr>
+                  <th className="p-2 bg-[#FFDEE2] text-[#FF6B8B] font-bold border-2 border-[#FFBAC3] rounded-tl-lg w-[100px]">Time</th>
+                  {days.map((day, index) => (
+                    <th 
+                      key={day}
+                      className={`p-2 font-bold border-2 ${dayColors[day]} ${index === days.length - 1 ? 'rounded-tr-lg' : ''}`}
+                    >
+                      {day}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {timeSlots.map((time, timeIndex) => {
+                  const breakPeriod = getBreakForTimeSlot(time);
                   
-                  {days.map((day, dayIndex) => {
-                    const block = getBlockForTimeSlot(day, time);
-                    const breakPeriod = getBreakForTimeSlot(time);
-                    const cellId = `${day}-${time}`;
-                    const isLastRow = timeIndex === timeSlots.length - 1;
-                    const isLastCol = dayIndex === days.length - 1;
-                    
-                    return (
-                      <div
-                        key={`${day}-${time}`}
-                        className={`border-2 ${dayColors[day]} ${isLastRow && isLastCol ? 'rounded-br-lg' : ''} ${dropTargetId === cellId ? 'ring-2 ring-[#FF6B8B]' : ''}`}
-                        onDrop={(e) => handleBlockDrop(e, day, time)}
-                        onDragOver={(e) => handleDragOver(e, cellId)}
-                        onDragLeave={handleDragLeave}
-                      >
-                        {block && (
-                          <TimetableBlock 
-                            block={block} 
-                            subject={getSubjectForBlock(block)}
-                            updateBlock={updateTimetableBlock}
-                          />
-                        )}
+                  return (
+                    <tr key={time}>
+                      <td className={`p-2 text-center text-sm font-medium bg-[#FFDEE2] text-[#FF6B8B] border-2 border-[#FFBAC3] ${timeIndex === timeSlots.length - 1 ? 'rounded-bl-lg' : ''}`}>
+                        {time}
+                      </td>
+                      
+                      {days.map((day, dayIndex) => {
+                        const block = timetableMatrix[timeIndex][dayIndex];
+                        const cellId = `${timeIndex}-${dayIndex}`;
+                        const isLastRow = timeIndex === timeSlots.length - 1;
+                        const isLastCol = dayIndex === days.length - 1;
                         
-                        {breakPeriod && !block && (
-                          <div className="h-full w-full flex items-center justify-center p-2 bg-[#FDE1D3] text-[#FF6B8B] text-sm font-medium border border-[#FEC6A1]">
-                            {breakPeriod.name}
-                          </div>
-                        )}
-                      </div>
-                    );
-                  })}
-                </React.Fragment>
-              ))}
-            </div>
+                        return (
+                          <td
+                            key={`${day}-${time}`}
+                            className={`border-2 relative h-24 ${dayColors[day]} ${isLastRow && isLastCol ? 'rounded-br-lg' : ''} ${dropTargetId === cellId ? 'ring-2 ring-[#FF6B8B]' : ''}`}
+                            onDrop={(e) => handleBlockDrop(e, timeIndex, dayIndex)}
+                            onDragOver={(e) => handleDragOver(e, cellId)}
+                            onDragLeave={handleDragLeave}
+                          >
+                            {block && (
+                              <TimetableBlock 
+                                block={block} 
+                                subject={getSubjectForBlock(block)}
+                                updateBlock={updateTimetableBlock}
+                              />
+                            )}
+                            
+                            {breakPeriod && !block && (
+                              <div className="h-full w-full flex items-center justify-center p-2 bg-[#FDE1D3] text-[#FF6B8B] text-sm font-medium border border-[#FEC6A1] rounded-md">
+                                {breakPeriod.name}
+                              </div>
+                            )}
+                            
+                            {!block && !breakPeriod && (
+                              <div className="h-full w-full p-2">
+                                <div className="h-full w-full rounded-md border-2 border-dashed border-[#FFBAC3]/30 flex items-center justify-center">
+                                  <span className="text-xs text-[#FF6B8B]/30">Empty Slot</span>
+                                </div>
+                              </div>
+                            )}
+                          </td>
+                        );
+                      })}
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
           </div>
         </div>
       </Card>

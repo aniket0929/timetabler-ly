@@ -1,6 +1,6 @@
 
 import React, { useState, useRef } from 'react';
-import { Pencil, X } from 'lucide-react';
+import { Pencil } from 'lucide-react';
 import { 
   Dialog,
   DialogContent,

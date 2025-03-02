@@ -1,4 +1,3 @@
-
 import React, { useState, useRef } from 'react';
 import { Pencil } from 'lucide-react';
 import { 
@@ -29,7 +28,6 @@ const TimetableBlock: React.FC<TimetableBlockProps> = ({ block, subject, updateB
     e.dataTransfer.effectAllowed = 'move';
     
     if (blockRef.current) {
-      // Add visual feedback for dragging
       setTimeout(() => {
         if (blockRef.current) {
           blockRef.current.style.opacity = '0.4';
@@ -58,21 +56,18 @@ const TimetableBlock: React.FC<TimetableBlockProps> = ({ block, subject, updateB
     setEditedBlock(prev => ({ ...prev, [field]: value }));
   };
   
-  // Get a light color based on the subject name
   const getSubjectColor = () => {
-    // Simple hash function for strings
     const hash = subject.name.split('').reduce((a, b) => {
       a = ((a << 5) - a) + b.charCodeAt(0);
       return a & a;
     }, 0);
     
-    // List of pastel colors
     const colors = [
-      { bg: 'bg-[#F2FCE2]', border: 'border-[#DCF0C3]', text: 'text-[#77A357]' }, // green
-      { bg: 'bg-[#E5DEFF]', border: 'border-[#CBC2FF]', text: 'text-[#7366BD]' }, // purple
-      { bg: 'bg-[#D3E4FD]', border: 'border-[#B0CEFF]', text: 'text-[#3B82F6]' }, // blue
-      { bg: 'bg-[#FDE1D3]', border: 'border-[#FEC6A1]', text: 'text-[#F97316]' }, // orange
-      { bg: 'bg-[#FEF7CD]', border: 'border-[#F3E9A6]', text: 'text-[#EAB308]' }, // yellow
+      { bg: 'bg-[#FFF5F7]', border: 'border-[#FFCDD6]', text: 'text-[#FF6B8B]' },
+      { bg: 'bg-[#FFF0F5]', border: 'border-[#FFD6E0]', text: 'text-[#FF5C7F]' },
+      { bg: 'bg-[#FFF0F0]', border: 'border-[#FFD6D6]', text: 'text-[#FF7070]' },
+      { bg: 'bg-[#FFEEF5]', border: 'border-[#FFCCE8]', text: 'text-[#FF66A3]' },
+      { bg: 'bg-[#FFF5FF]', border: 'border-[#FFE6FF]', text: 'text-[#FF66FF]' },
     ];
     
     return colors[Math.abs(hash) % colors.length];

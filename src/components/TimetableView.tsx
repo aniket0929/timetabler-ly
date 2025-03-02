@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useTimetable, TimetableBlock as TimetableBlockType } from '@/context/TimetableContext';
 import TimetableBlock from './TimetableBlock';
@@ -24,12 +23,10 @@ const TimetableView: React.FC = () => {
     );
   }
   
-  // Determine days to display based on operating days
   const days = constraints.operatingDays === 'monday-to-friday'
     ? ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday']
     : ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
   
-  // Generate time slots
   const startHour = parseInt(constraints.startTime.split(':')[0]);
   const endHour = parseInt(constraints.endTime.split(':')[0]);
   const timeSlots = [];
@@ -38,10 +35,8 @@ const TimetableView: React.FC = () => {
     timeSlots.push(`${hour.toString().padStart(2, '0')}:00`);
   }
   
-  // Create a matrix to represent the timetable
   const timetableMatrix: (TimetableBlockType | null)[][] = [];
   
-  // Initialize the matrix with null values
   for (let i = 0; i < timeSlots.length; i++) {
     timetableMatrix[i] = [];
     for (let j = 0; j < days.length; j++) {
@@ -49,7 +44,6 @@ const TimetableView: React.FC = () => {
     }
   }
   
-  // Fill the matrix with blocks
   selectedTimetable.blocks.forEach(block => {
     const day = days.indexOf(block.day);
     const startTime = block.startTime.split(':');
@@ -61,7 +55,6 @@ const TimetableView: React.FC = () => {
     }
   });
   
-  // Get break periods for a specific time
   const getBreakForTimeSlot = (time: string) => {
     return constraints.breakPeriods.find(breakPeriod => {
       const breakStartHour = parseInt(breakPeriod.startTime.split(':')[0]);
@@ -108,14 +101,13 @@ const TimetableView: React.FC = () => {
     };
   };
   
-  // Define pastel colors for days
   const dayColors = {
-    'Monday': 'bg-[#FFDEE2] border-[#FFBAC3]',
-    'Tuesday': 'bg-[#FEF7CD] border-[#F3E9A6]',
-    'Wednesday': 'bg-[#F2FCE2] border-[#DCF0C3]',
-    'Thursday': 'bg-[#D3E4FD] border-[#B0CEFF]',
-    'Friday': 'bg-[#E5DEFF] border-[#CBC2FF]',
-    'Saturday': 'bg-[#FDE1D3] border-[#FEC6A1]'
+    'Monday': 'bg-[#FFF5F7] border-[#FFBAC3]',
+    'Tuesday': 'bg-[#FFF5F7] border-[#FFBAC3]',
+    'Wednesday': 'bg-[#FFF5F7] border-[#FFBAC3]',
+    'Thursday': 'bg-[#FFF5F7] border-[#FFBAC3]',
+    'Friday': 'bg-[#FFF5F7] border-[#FFBAC3]',
+    'Saturday': 'bg-[#FFF5F7] border-[#FFBAC3]'
   };
   
   return (
@@ -139,7 +131,6 @@ const TimetableView: React.FC = () => {
       )}
       
       <Card className="overflow-hidden border-[#FFBAC3] bg-white p-0 relative">
-        {/* Decorative elements */}
         <div className="absolute top-0 left-0 w-20 h-20 bg-[url('/lovable-uploads/84a222e7-3f1c-44e3-a17b-451371481dca.png')] bg-no-repeat bg-contain opacity-40"></div>
         <div className="absolute top-0 right-0 w-20 h-20 bg-[url('/lovable-uploads/84a222e7-3f1c-44e3-a17b-451371481dca.png')] bg-no-repeat bg-contain opacity-40 transform scale-x-[-1]"></div>
         <div className="absolute bottom-0 left-0 w-20 h-20 bg-[url('/lovable-uploads/84a222e7-3f1c-44e3-a17b-451371481dca.png')] bg-no-repeat bg-contain opacity-40 transform scale-y-[-1]"></div>
@@ -158,7 +149,7 @@ const TimetableView: React.FC = () => {
                   {days.map((day, index) => (
                     <th 
                       key={day}
-                      className={`p-2 font-bold border-2 ${dayColors[day]} ${index === days.length - 1 ? 'rounded-tr-lg' : ''}`}
+                      className={`p-2 font-bold border-2 bg-[#FFDEE2] text-[#FF6B8B] border-[#FFBAC3] ${index === days.length - 1 ? 'rounded-tr-lg' : ''}`}
                     >
                       {day}
                     </th>
@@ -198,7 +189,7 @@ const TimetableView: React.FC = () => {
                             )}
                             
                             {breakPeriod && !block && (
-                              <div className="h-full w-full flex items-center justify-center p-2 bg-[#FDE1D3] text-[#FF6B8B] text-sm font-medium border border-[#FEC6A1] rounded-md">
+                              <div className="h-full w-full flex items-center justify-center p-2 bg-[#FFF0F3] text-[#FF6B8B] text-sm font-medium border border-[#FFCDD6] rounded-md">
                                 {breakPeriod.name}
                               </div>
                             )}

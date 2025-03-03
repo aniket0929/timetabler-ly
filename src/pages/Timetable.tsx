@@ -18,7 +18,7 @@ const Timetable: React.FC = () => {
   }, [selectedTimetable, constraints.subjects, navigate]);
   
   return (
-    <div className="min-h-screen flex flex-col bg-gradient-to-b from-[#FFF5F7] to-[#FFDEE2]">
+    <div className="min-h-screen flex flex-col bg-gradient-to-b from-[#F6F6F7] to-[#E1EBFF]">
       <Header />
       
       <main className="flex-1 pt-24 pb-20 px-6">

@@ -41,7 +41,7 @@ const TimetableCell: React.FC<TimetableCellProps> = ({
 }) => {
   return (
     <td
-      className={`border-2 relative h-24 ${dayColor} ${isLastRow && isLastCol ? 'rounded-br-lg' : ''} ${dropTargetId === cellId ? 'ring-2 ring-[#FF6B8B]' : ''}`}
+      className={`border-2 relative h-24 ${dayColor} ${isLastRow && isLastCol ? 'rounded-br-lg' : ''} ${dropTargetId === cellId ? 'ring-2 ring-primary' : ''}`}
       onDrop={(e) => handleBlockDrop(e, timeIndex, dayIndex)}
       onDragOver={(e) => handleDragOver(e, cellId)}
       onDragLeave={handleDragLeave}
@@ -55,15 +55,15 @@ const TimetableCell: React.FC<TimetableCellProps> = ({
       )}
       
       {breakPeriod && !block && (
-        <div className="h-full w-full flex items-center justify-center p-2 bg-[#FFF0F3] text-[#FF6B8B] text-sm font-medium border border-[#FFCDD6] rounded-md">
+        <div className="h-full w-full flex items-center justify-center p-2 bg-primary/5 text-primary text-sm font-medium border border-primary/20 rounded-md">
           {breakPeriod.name}
         </div>
       )}
       
       {!block && !breakPeriod && (
         <div className="h-full w-full p-2">
-          <div className="h-full w-full rounded-md border-2 border-dashed border-[#FFBAC3]/30 flex items-center justify-center">
-            <span className="text-xs text-[#FF6B8B]/30">Empty Slot</span>
+          <div className="h-full w-full rounded-md border-2 border-dashed border-primary/20 flex items-center justify-center">
+            <span className="text-xs text-primary/30">Empty Slot</span>
           </div>
         </div>
       )}

@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useTimetable, TimetableBlock as TimetableBlockType } from '@/context/TimetableContext';
 import { Card } from '@/components/ui/card';
@@ -105,12 +104,12 @@ const TimetableView: React.FC = () => {
   };
   
   const dayColors = {
-    'Monday': 'bg-[#FFF5F7] border-[#FFBAC3]',
-    'Tuesday': 'bg-[#FFF5F7] border-[#FFBAC3]',
-    'Wednesday': 'bg-[#FFF5F7] border-[#FFBAC3]',
-    'Thursday': 'bg-[#FFF5F7] border-[#FFBAC3]',
-    'Friday': 'bg-[#FFF5F7] border-[#FFBAC3]',
-    'Saturday': 'bg-[#FFF5F7] border-[#FFBAC3]'
+    'Monday': 'bg-[#F6F6F7] border-primary/20',
+    'Tuesday': 'bg-[#F6F6F7] border-primary/20',
+    'Wednesday': 'bg-[#F6F6F7] border-primary/20',
+    'Thursday': 'bg-[#F6F6F7] border-primary/20',
+    'Friday': 'bg-[#F6F6F7] border-primary/20',
+    'Saturday': 'bg-[#F6F6F7] border-primary/20'
   };
   
   return (
@@ -121,13 +120,13 @@ const TimetableView: React.FC = () => {
         setSelectedTimetable={setSelectedTimetable}
       />
       
-      <Card className="overflow-hidden border-[#FFBAC3] bg-white p-0 relative">
-        <div className="absolute top-0 left-0 w-20 h-20 bg-[url('/lovable-uploads/84a222e7-3f1c-44e3-a17b-451371481dca.png')] bg-no-repeat bg-contain opacity-40"></div>
-        <div className="absolute top-0 right-0 w-20 h-20 bg-[url('/lovable-uploads/84a222e7-3f1c-44e3-a17b-451371481dca.png')] bg-no-repeat bg-contain opacity-40 transform scale-x-[-1]"></div>
-        <div className="absolute bottom-0 left-0 w-20 h-20 bg-[url('/lovable-uploads/84a222e7-3f1c-44e3-a17b-451371481dca.png')] bg-no-repeat bg-contain opacity-40 transform scale-y-[-1]"></div>
-        <div className="absolute bottom-0 right-0 w-20 h-20 bg-[url('/lovable-uploads/84a222e7-3f1c-44e3-a17b-451371481dca.png')] bg-no-repeat bg-contain opacity-40 transform scale-x-[-1] scale-y-[-1]"></div>
+      <Card className="overflow-hidden border-primary/30 bg-white p-0 relative">
+        <div className="absolute top-0 left-0 w-20 h-20 bg-[url('/lovable-uploads/84a222e7-3f1c-44e3-a17b-451371481dca.png')] bg-no-repeat bg-contain opacity-30"></div>
+        <div className="absolute top-0 right-0 w-20 h-20 bg-[url('/lovable-uploads/84a222e7-3f1c-44e3-a17b-451371481dca.png')] bg-no-repeat bg-contain opacity-30 transform scale-x-[-1]"></div>
+        <div className="absolute bottom-0 left-0 w-20 h-20 bg-[url('/lovable-uploads/84a222e7-3f1c-44e3-a17b-451371481dca.png')] bg-no-repeat bg-contain opacity-30 transform scale-y-[-1]"></div>
+        <div className="absolute bottom-0 right-0 w-20 h-20 bg-[url('/lovable-uploads/84a222e7-3f1c-44e3-a17b-451371481dca.png')] bg-no-repeat bg-contain opacity-30 transform scale-x-[-1] scale-y-[-1]"></div>
         
-        <h2 className="text-center py-3 text-2xl font-bold bg-[#FFDEE2] text-[#FF6B8B] border-b-2 border-[#FFBAC3]">
+        <h2 className="text-center py-3 text-2xl font-bold bg-primary/10 text-primary border-b-2 border-primary/30">
           School Timetable
         </h2>
         
@@ -153,7 +152,7 @@ const TimetableView: React.FC = () => {
         </div>
       </Card>
       
-      <div className="text-center text-sm text-[#FF6B8B]">
+      <div className="text-center text-sm text-primary/80">
         <p>Drag and drop classes to rearrange them. Click the edit icon to modify details.</p>
       </div>
     </div>

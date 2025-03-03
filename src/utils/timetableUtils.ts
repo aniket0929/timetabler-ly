@@ -51,14 +51,32 @@ const generateFallbackTimetables = (constraints: TimetableConstraints): Timetabl
   for (let optionIndex = 0; optionIndex < 3; optionIndex++) {
     const blocks: TimetableBlock[] = [];
     
+    // Track which subjects are already scheduled for each day
+    const subjectsPerDay: Record<string, string[]> = {};
+    days.forEach(day => {
+      subjectsPerDay[day] = [];
+    });
+    
     constraints.subjects.forEach((subject) => {
       // Distribute the subject's lectures across the week
       let lecturesPlaced = 0;
+      let attemptsPerSubject = 0;
+      const maxAttempts = days.length * 10; // Reasonable number of attempts before giving up
       
-      while (lecturesPlaced < subject.lecturesPerWeek) {
+      while (lecturesPlaced < subject.lecturesPerWeek && attemptsPerSubject < maxAttempts) {
+        attemptsPerSubject++;
+        
         // Randomly select a day for this lecture
-        const dayIndex = Math.floor(Math.random() * days.length);
-        const day = days[dayIndex];
+        const availableDays = days.filter(day => !subjectsPerDay[day].includes(subject.id));
+        
+        // If all days already have this subject, skip (can't place more than 1 lecture per day)
+        if (availableDays.length === 0) {
+          console.log(`Cannot place more lectures for ${subject.name}, already scheduled on all available days`);
+          break;
+        }
+        
+        const dayIndex = Math.floor(Math.random() * availableDays.length);
+        const day = availableDays[dayIndex];
         
         // Generate a random start time between institution start and end times
         const startHour = parseInt(constraints.startTime.split(':')[0]);
@@ -97,6 +115,9 @@ const generateFallbackTimetables = (constraints: TimetableConstraints): Timetabl
             faculty: subject.faculty,
             room: subject.room
           });
+          
+          // Mark this subject as scheduled for this day
+          subjectsPerDay[day].push(subject.id);
           
           lecturesPlaced++;
         }

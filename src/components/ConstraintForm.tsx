@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { PlusCircle, Trash2, BookOpen } from 'lucide-react';
@@ -404,7 +403,6 @@ const ConstraintForm: React.FC = () => {
                               <SelectItem value="30">30 minutes</SelectItem>
                               <SelectItem value="45">45 minutes</SelectItem>
                               <SelectItem value="60">1 hour</SelectItem>
-                              <SelectItem value="90">1.5 hours</SelectItem>
                               <SelectItem value="120">2 hours</SelectItem>
                             </SelectContent>
                           </Select>

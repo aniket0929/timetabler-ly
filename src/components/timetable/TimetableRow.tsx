@@ -17,6 +17,8 @@ interface TimetableRowProps {
   handleDragLeave: () => void;
   handleBlockDrop: (e: React.DragEvent<HTMLDivElement>, timeIndex: number, dayIndex: number) => void;
   updateTimetableBlock: (block: TimetableBlockType) => void;
+  isSlotOccupiedByTwoHourBlock: (timeIndex: number, dayIndex: number) => boolean;
+  getDurationForBlock: (block: TimetableBlockType) => number;
 }
 
 const TimetableRow: React.FC<TimetableRowProps> = ({
@@ -32,14 +34,16 @@ const TimetableRow: React.FC<TimetableRowProps> = ({
   handleDragOver,
   handleDragLeave,
   handleBlockDrop,
-  updateTimetableBlock
+  updateTimetableBlock,
+  isSlotOccupiedByTwoHourBlock,
+  getDurationForBlock
 }) => {
   const breakPeriod = getBreakForTimeSlot(time);
   const isLastRow = timeIndex === timeSlots.length - 1;
   
   return (
     <tr key={time}>
-      <td className={`p-2 text-center text-sm font-medium bg-[#FFDEE2] text-[#FF6B8B] border-2 border-[#FFBAC3] ${isLastRow ? 'rounded-bl-lg' : ''}`}>
+      <td className={`p-2 text-center text-sm font-medium bg-primary/10 text-primary border-2 border-primary/30 ${isLastRow ? 'rounded-bl-lg' : ''}`}>
         {time}
       </td>
       
@@ -47,6 +51,12 @@ const TimetableRow: React.FC<TimetableRowProps> = ({
         const block = timetableMatrix[timeIndex][dayIndex];
         const cellId = `${timeIndex}-${dayIndex}`;
         const isLastCol = dayIndex === days.length - 1;
+        const isOccupiedByTwoHourBlock = isSlotOccupiedByTwoHourBlock(timeIndex, dayIndex);
+        
+        // Skip rendering if this slot is part of a 2-hour block from the previous row
+        if (isOccupiedByTwoHourBlock) {
+          return null;
+        }
         
         return (
           <TimetableCell
@@ -67,6 +77,7 @@ const TimetableRow: React.FC<TimetableRowProps> = ({
             handleBlockDrop={handleBlockDrop}
             updateTimetableBlock={updateTimetableBlock}
             dayColor={dayColors[day]}
+            isTwoHourBlock={block && getDurationForBlock(block) === 120}
           />
         );
       })}

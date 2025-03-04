@@ -20,6 +20,7 @@ interface TimetableCellProps {
   handleBlockDrop: (e: React.DragEvent<HTMLDivElement>, timeIndex: number, dayIndex: number) => void;
   updateTimetableBlock: (block: TimetableBlockType) => void;
   dayColor: string;
+  isTwoHourBlock: boolean;
 }
 
 const TimetableCell: React.FC<TimetableCellProps> = ({
@@ -37,20 +38,23 @@ const TimetableCell: React.FC<TimetableCellProps> = ({
   handleDragLeave,
   handleBlockDrop,
   updateTimetableBlock,
-  dayColor
+  dayColor,
+  isTwoHourBlock
 }) => {
   return (
     <td
-      className={`border-2 relative h-24 ${dayColor} ${isLastRow && isLastCol ? 'rounded-br-lg' : ''} ${dropTargetId === cellId ? 'ring-2 ring-primary' : ''}`}
+      className={`border-2 relative h-24 ${dayColor} ${isLastRow && isLastCol ? 'rounded-br-lg' : ''} ${dropTargetId === cellId ? 'ring-2 ring-primary' : ''} ${isTwoHourBlock ? 'rowspan-2' : ''}`}
       onDrop={(e) => handleBlockDrop(e, timeIndex, dayIndex)}
       onDragOver={(e) => handleDragOver(e, cellId)}
       onDragLeave={handleDragLeave}
+      rowSpan={isTwoHourBlock ? 2 : 1}
     >
       {block && (
         <TimetableBlock 
           block={block} 
           subject={getSubjectForBlock(block)}
           updateBlock={updateTimetableBlock}
+          isTwoHourBlock={isTwoHourBlock}
         />
       )}
       

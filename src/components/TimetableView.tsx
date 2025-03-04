@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useTimetable, TimetableBlock as TimetableBlockType } from '@/context/TimetableContext';
 import { Card } from '@/components/ui/card';
@@ -37,8 +38,8 @@ const TimetableView: React.FC = () => {
     timeSlots.push(`${hour.toString().padStart(2, '0')}:00`);
   }
   
+  // Initialize the timetable matrix with null values
   const timetableMatrix: (TimetableBlockType | null)[][] = [];
-  
   for (let i = 0; i < timeSlots.length; i++) {
     timetableMatrix[i] = [];
     for (let j = 0; j < days.length; j++) {
@@ -46,6 +47,10 @@ const TimetableView: React.FC = () => {
     }
   }
   
+  // Track which timeSlots are occupied by 2-hour blocks
+  const occupiedSlots: Record<string, boolean> = {};
+  
+  // Place blocks in the matrix
   selectedTimetable.blocks.forEach(block => {
     const day = days.indexOf(block.day);
     const startTime = block.startTime.split(':');
@@ -54,6 +59,13 @@ const TimetableView: React.FC = () => {
     
     if (day >= 0 && rowIndex >= 0 && rowIndex < timeSlots.length) {
       timetableMatrix[rowIndex][day] = block;
+      
+      // For 2-hour blocks, mark the next slot as occupied
+      const subject = constraints.subjects.find(s => s.id === block.subjectId);
+      if (subject && subject.duration === 120 && rowIndex + 1 < timeSlots.length) {
+        // Mark this slot as occupied by a 2-hour block
+        occupiedSlots[`${rowIndex + 1}-${day}`] = true;
+      }
     }
   });
   
@@ -66,6 +78,15 @@ const TimetableView: React.FC = () => {
     });
   };
   
+  const isSlotOccupiedByTwoHourBlock = (timeIndex: number, dayIndex: number) => {
+    return occupiedSlots[`${timeIndex}-${dayIndex}`] === true;
+  };
+  
+  const getDurationForBlock = (block: TimetableBlockType) => {
+    const subject = constraints.subjects.find(s => s.id === block.subjectId);
+    return subject ? subject.duration : 60;
+  };
+  
   const handleBlockDrop = (e: React.DragEvent<HTMLDivElement>, timeIndex: number, dayIndex: number) => {
     e.preventDefault();
     setDropTargetId(null);
@@ -75,6 +96,35 @@ const TimetableView: React.FC = () => {
       if (blockData && blockData.id) {
         const day = days[dayIndex];
         const time = timeSlots[timeIndex];
+        
+        // Check if there's already a subject from this block on this day
+        const hasDuplicateSubjectOnDay = selectedTimetable.blocks.some(existingBlock => 
+          existingBlock.subjectId === blockData.subjectId && 
+          existingBlock.day === day && 
+          existingBlock.id !== blockData.id
+        );
+        
+        if (hasDuplicateSubjectOnDay) {
+          console.log('Cannot place more than one lecture for the same subject on the same day');
+          return;
+        }
+        
+        // Check if there's enough space for a 2-hour block
+        const subject = constraints.subjects.find(s => s.id === blockData.subjectId);
+        if (subject && subject.duration === 120) {
+          // Check if the next slot is available
+          if (timeIndex + 1 >= timeSlots.length) {
+            console.log('Not enough time slots available for a 2-hour lecture');
+            return;
+          }
+          
+          const nextSlotHasBlock = timetableMatrix[timeIndex + 1][dayIndex] !== null;
+          if (nextSlotHasBlock) {
+            console.log('Next time slot is already occupied');
+            return;
+          }
+        }
+        
         moveTimetableBlock(blockData.id, day, time);
       }
     } catch (error) {
@@ -146,6 +196,8 @@ const TimetableView: React.FC = () => {
                 handleDragLeave={handleDragLeave}
                 handleBlockDrop={handleBlockDrop}
                 updateTimetableBlock={updateTimetableBlock}
+                isSlotOccupiedByTwoHourBlock={isSlotOccupiedByTwoHourBlock}
+                getDurationForBlock={getDurationForBlock}
               />
             </table>
           </div>

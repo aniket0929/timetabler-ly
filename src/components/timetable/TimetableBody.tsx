@@ -15,6 +15,8 @@ interface TimetableBodyProps {
   handleDragLeave: () => void;
   handleBlockDrop: (e: React.DragEvent<HTMLDivElement>, timeIndex: number, dayIndex: number) => void;
   updateTimetableBlock: (block: TimetableBlockType) => void;
+  isSlotOccupiedByTwoHourBlock: (timeIndex: number, dayIndex: number) => boolean;
+  getDurationForBlock: (block: TimetableBlockType) => number;
 }
 
 const TimetableBody: React.FC<TimetableBodyProps> = ({
@@ -28,7 +30,9 @@ const TimetableBody: React.FC<TimetableBodyProps> = ({
   handleDragOver,
   handleDragLeave,
   handleBlockDrop,
-  updateTimetableBlock
+  updateTimetableBlock,
+  isSlotOccupiedByTwoHourBlock,
+  getDurationForBlock
 }) => {
   return (
     <tbody>
@@ -48,6 +52,8 @@ const TimetableBody: React.FC<TimetableBodyProps> = ({
           handleDragLeave={handleDragLeave}
           handleBlockDrop={handleBlockDrop}
           updateTimetableBlock={updateTimetableBlock}
+          isSlotOccupiedByTwoHourBlock={isSlotOccupiedByTwoHourBlock}
+          getDurationForBlock={getDurationForBlock}
         />
       ))}
     </tbody>

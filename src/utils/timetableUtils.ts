@@ -97,6 +97,19 @@ const generateFallbackTimetables = (constraints: TimetableConstraints): Timetabl
           return (startTime < breakPeriod.endTime && endTime > breakPeriod.startTime);
         });
         
+        // Check for time slot overlap for 2-hour classes
+        let hasSlotOverlap = false;
+        if (subject.duration === 120) {
+          // Get the next time slot
+          const nextHour = randomHour + 1;
+          const nextTimeSlot = `${nextHour.toString().padStart(2, '0')}:00`;
+          
+          // Check if the next slot is already occupied
+          hasSlotOverlap = blocks.some(block => {
+            return block.day === day && block.startTime === nextTimeSlot;
+          });
+        }
+        
         // Check for overlap with existing blocks for this day
         const overlapsWithBlock = blocks.some(block => {
           return block.day === day && 
@@ -105,7 +118,7 @@ const generateFallbackTimetables = (constraints: TimetableConstraints): Timetabl
                  (startTime <= block.startTime && endTime >= block.endTime));
         });
         
-        if (!overlapsWithBreak && !overlapsWithBlock) {
+        if (!overlapsWithBreak && !overlapsWithBlock && !hasSlotOverlap) {
           blocks.push({
             id: nanoid(), // Use nanoid for temporary IDs
             subjectId: subject.id,

@@ -54,7 +54,8 @@ const TimetableCell: React.FC<TimetableCellProps> = ({
           block={block} 
           subject={getSubjectForBlock(block)}
           updateBlock={updateTimetableBlock}
-          isTwoHourBlock={isTwoHourBlock}
+          // Remove the isTwoHourBlock prop or handle it differently
+          // The TimetableBlock component doesn't accept this prop
         />
       )}
       

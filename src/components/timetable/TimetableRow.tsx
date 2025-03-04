@@ -58,6 +58,8 @@ const TimetableRow: React.FC<TimetableRowProps> = ({
           return null;
         }
         
+        const isTwoHourBlock = block && getDurationForBlock(block) === 120;
+        
         return (
           <TimetableCell
             key={`${day}-${time}`}
@@ -77,7 +79,7 @@ const TimetableRow: React.FC<TimetableRowProps> = ({
             handleBlockDrop={handleBlockDrop}
             updateTimetableBlock={updateTimetableBlock}
             dayColor={dayColors[day]}
-            isTwoHourBlock={block && getDurationForBlock(block) === 120}
+            isTwoHourBlock={isTwoHourBlock}
           />
         );
       })}

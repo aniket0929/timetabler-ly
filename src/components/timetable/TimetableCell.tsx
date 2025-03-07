@@ -43,7 +43,7 @@ const TimetableCell: React.FC<TimetableCellProps> = ({
 }) => {
   return (
     <td
-      className={`border-2 relative h-24 ${dayColor} ${isLastRow && isLastCol ? 'rounded-br-lg' : ''} ${dropTargetId === cellId ? 'ring-2 ring-primary' : ''} ${isTwoHourBlock ? 'rowspan-2' : ''}`}
+      className={`border-2 relative h-24 ${dayColor} ${isLastRow && isLastCol ? 'rounded-br-lg' : ''} ${dropTargetId === cellId ? 'ring-2 ring-primary' : ''}`}
       onDrop={(e) => handleBlockDrop(e, timeIndex, dayIndex)}
       onDragOver={(e) => handleDragOver(e, cellId)}
       onDragLeave={handleDragLeave}
@@ -54,8 +54,7 @@ const TimetableCell: React.FC<TimetableCellProps> = ({
           block={block} 
           subject={getSubjectForBlock(block)}
           updateBlock={updateTimetableBlock}
-          // Remove the isTwoHourBlock prop or handle it differently
-          // The TimetableBlock component doesn't accept this prop
+          // Remove the isTwoHourBlock prop since TimetableBlock doesn't accept it
         />
       )}
       
